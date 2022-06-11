@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./static/main.css">
+    <title>Criminal Finder</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    {% if not filename %}
+    <div class="mid">
+        <h1>Upload Image for Search</h1>
+        <form action="/" method="post" action="/" enctype="multipart/form-data" class="upload-form">
+            <div class="upload">
+                <div class="uploader">
+                    <input type="file" class="upload-field" name="file"  required>
+                    <div class="upload-btn"  >
+                        <input type="submit" name="submit" value="UPLOAD"  class="upload-btn" id="up-btn">
+                        <label for="upload-btn" style="border: 4x solid black;
+                        font-size: 150%;
+                        border-radius: 5px;
+                        background-color: #182b3a;background-image: linear-gradient(315deg, #182b3a 0%, #20a4f3 74%);
+                        color: black;
+                        z-index: 100;">UPLOAD</label>
+                    </div>
+                </div>
+            </div>
+        </form>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages %}
+        <h4 id="infomsg" >{{ message }}</h4>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
+    {% endif %}
+    {% if filename %}
+    <div class="matcher">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages %}
+        <h4 id="matchmsg">{{message}}</h4>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        <div class="img-matcher">
+            <img id="img-left" src="{{url_for('image_displayer', filename = filename)}}" >
+            <img id="img-right" class="active" src="./static/Facial-Recognition-Indian-Government.gif" >
+        </div>
+        <div class="match-btn buttons" >
+            <button type="button" class="btn" id="m-btn">MATCH</button>
+        </div>
+        <div class="upload-btn-1 active buttons">
+            <button type="button" class="btn" onclick="location.href='/form'">UPLOAD INFO</button>
+        </div>
+        <div class="view-btn active buttons">
+            <button type="button" class="btn" id="v-btn">VIEW INFO</button>
+        </div>
+    </div>
+    {% endif %}
+
+</body>
+ <script>
+    $(document).ready(function(){
+        var file = ""
+        
+        $('body').css("background","#380036");
+        // $('.img-matcher').css("background","transparent");
+        $('#m-btn').click(function () {
+            $('#img-right').removeClass("active");
+            $('#v-btn').addClass("active");
+            $('.match-btn').addClass("active");
+        
+            document.getElementById('matchmsg').innerHTML = 'Matching...';
+            $.getJSON("{{ url_for('match_image', filename = filename)}}",function(value){
+                var name = value.name;
+                var msg = value.msg;
+                var dob = value.dob;
+                var k = value.k;
+                file = value.file;
+                document.getElementById('matchmsg').innerHTML = msg ;
+                $('.infos-btn').removeClass("active");
+                if (k==1) {
+                    document.getElementById('img-right').src=`static/dbimages/${file}`;
+                    $('.view-btn').removeClass("active");
+                }
+                else {
+                    $('#img-right').addClass("active");
+                    $('.upload-btn-1').removeClass("active");
+                }
+            });
+        });
+        $('#v-btn').click(function(){
+            window.location.href = `/face_rec?file=${file}`;
+        });
+    });
+</script>
+
+</html>
